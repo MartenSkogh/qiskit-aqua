@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # This code is part of Qiskit.
 #
 # (C) Copyright IBM 2018, 2020.
@@ -32,8 +30,6 @@ from qiskit.aqua.operators import MatrixOperator
 from qiskit.aqua.components.eigs import EigsQPE
 from qiskit.aqua.components.reciprocals import LookupRotation, LongDivision
 from qiskit.aqua.components.initial_states import Custom
-from qiskit.aqua.components.qfts import Standard as StandardQFT
-from qiskit.aqua.components.iqfts import Standard as StandardIQFT
 
 
 @ddt
@@ -45,23 +41,14 @@ class TestHHL(QiskitAquaTestCase):
         aqua_globals.random_seed = 2752
 
     @staticmethod
-    def _create_eigs(matrix, num_ancillae, negative_evals, deprecated_qft=False):
+    def _create_eigs(matrix, num_ancillae, negative_evals):
         # Adding an additional flag qubit for negative eigenvalues
-        if deprecated_qft:
-            warnings.filterwarnings('ignore', category=DeprecationWarning)
-
         ne_qfts = [None, None]
         if negative_evals:
             num_ancillae += 1
-            if deprecated_qft:
-                ne_qfts = [StandardQFT(num_ancillae - 1), StandardIQFT(num_ancillae - 1)]
-            else:
-                ne_qfts = [QFT(num_ancillae - 1), QFT(num_ancillae - 1).inverse()]
+            ne_qfts = [QFT(num_ancillae - 1), QFT(num_ancillae - 1).inverse()]
 
-        if deprecated_qft:
-            iqft = StandardIQFT(num_ancillae)
-        else:
-            iqft = QFT(num_ancillae).inverse()
+        iqft = QFT(num_ancillae).inverse()
 
         eigs_qpe = EigsQPE(MatrixOperator(matrix=matrix),
                            iqft,
@@ -72,9 +59,6 @@ class TestHHL(QiskitAquaTestCase):
                            evo_time=None,
                            negative_evals=negative_evals,
                            ne_qfts=ne_qfts)
-
-        if deprecated_qft:
-            warnings.filterwarnings('always', category=DeprecationWarning)
 
         return eigs_qpe
 
@@ -87,7 +71,7 @@ class TestHHL(QiskitAquaTestCase):
 
         # run NumPyLSsolver
         ref_result = NumPyLSsolver(matrix, vector).run()
-        ref_solution = ref_result['solution']
+        ref_solution = ref_result.solution
         ref_normed = ref_solution / np.linalg.norm(ref_solution)
 
         # run hhl
@@ -110,7 +94,7 @@ class TestHHL(QiskitAquaTestCase):
                                               seed_simulator=aqua_globals.random_seed,
                                               seed_transpiler=aqua_globals.random_seed))
 
-        hhl_solution = hhl_result['solution']
+        hhl_solution = hhl_result.solution
         hhl_normed = hhl_solution / np.linalg.norm(hhl_solution)
 
         # compare results
@@ -120,7 +104,7 @@ class TestHHL(QiskitAquaTestCase):
         self.log.debug('HHL solution vector:       %s', hhl_solution)
         self.log.debug('algebraic solution vector: %s', ref_solution)
         self.log.debug('fidelity HHL to algebraic: %s', fidelity)
-        self.log.debug('probability of result:     %s', hhl_result["probability_result"])
+        self.log.debug('probability of result:     %s', hhl_result.probability_result)
 
     @data([-1, 0], [0, -1], [-1, -1])
     def test_hhl_diagonal_negative(self, vector):
@@ -131,7 +115,7 @@ class TestHHL(QiskitAquaTestCase):
 
         # run NumPyLSsolver
         ref_result = NumPyLSsolver(matrix, vector).run()
-        ref_solution = ref_result['solution']
+        ref_solution = ref_result.solution
         ref_normed = ref_solution / np.linalg.norm(ref_solution)
 
         # run hhl
@@ -154,7 +138,7 @@ class TestHHL(QiskitAquaTestCase):
                                               seed_simulator=aqua_globals.random_seed,
                                               seed_transpiler=aqua_globals.random_seed))
 
-        hhl_solution = hhl_result['solution']
+        hhl_solution = hhl_result.solution
         hhl_normed = hhl_solution / np.linalg.norm(hhl_solution)
 
         # compare results
@@ -164,7 +148,7 @@ class TestHHL(QiskitAquaTestCase):
         self.log.debug('HHL solution vector:       %s', hhl_solution)
         self.log.debug('algebraic solution vector: %s', ref_normed)
         self.log.debug('fidelity HHL to algebraic: %s', fidelity)
-        self.log.debug('probability of result:     %s', hhl_result["probability_result"])
+        self.log.debug('probability of result:     %s', hhl_result.probability_result)
 
     @idata([[[0, 1]], [[1, 0.1]], [[1, 1]]])
     @unpack
@@ -176,7 +160,7 @@ class TestHHL(QiskitAquaTestCase):
 
         # run NumPyLSsolver
         ref_result = NumPyLSsolver(matrix, vector).run()
-        ref_solution = ref_result['solution']
+        ref_solution = ref_result.solution
         ref_normed = ref_solution / np.linalg.norm(ref_solution)
 
         # run hhl
@@ -199,7 +183,7 @@ class TestHHL(QiskitAquaTestCase):
                                               seed_simulator=aqua_globals.random_seed,
                                               seed_transpiler=aqua_globals.random_seed))
 
-        hhl_solution = hhl_result['solution']
+        hhl_solution = hhl_result.solution
         hhl_normed = hhl_solution / np.linalg.norm(hhl_solution)
 
         # compare results
@@ -209,7 +193,7 @@ class TestHHL(QiskitAquaTestCase):
         self.log.debug('HHL solution vector:       %s', hhl_solution)
         self.log.debug('algebraic solution vector: %s', ref_normed)
         self.log.debug('fidelity HHL to algebraic: %s', fidelity)
-        self.log.debug('probability of result:     %s', hhl_result["probability_result"])
+        self.log.debug('probability of result:     %s', hhl_result.probability_result)
 
     @idata([[[0, 1]], [[1, 0]], [[1, 0.1]], [[1, 1]], [[1, 10]]])
     @unpack
@@ -221,7 +205,7 @@ class TestHHL(QiskitAquaTestCase):
 
         # run NumPyLSsolver
         ref_result = NumPyLSsolver(matrix, vector).run()
-        ref_solution = ref_result['solution']
+        ref_solution = ref_result.solution
         ref_normed = ref_solution / np.linalg.norm(ref_solution)
 
         # run hhl
@@ -244,7 +228,7 @@ class TestHHL(QiskitAquaTestCase):
         hhl_result = algo.run(QuantumInstance(BasicAer.get_backend('qasm_simulator'), shots=1000,
                                               seed_simulator=aqua_globals.random_seed,
                                               seed_transpiler=aqua_globals.random_seed))
-        hhl_solution = hhl_result['solution']
+        hhl_solution = hhl_result.solution
         hhl_normed = hhl_solution / np.linalg.norm(hhl_solution)
 
         # compare results
@@ -254,7 +238,7 @@ class TestHHL(QiskitAquaTestCase):
         self.log.debug('HHL solution vector:       %s', hhl_solution)
         self.log.debug('algebraic solution vector: %s', ref_normed)
         self.log.debug('fidelity HHL to algebraic: %s', fidelity)
-        self.log.debug('probability of result:     %s', hhl_result["probability_result"])
+        self.log.debug('probability of result:     %s', hhl_result.probability_result)
 
     @idata([[3, 4], [5, 5]])
     @unpack
@@ -267,7 +251,7 @@ class TestHHL(QiskitAquaTestCase):
 
         # run NumPyLSsolver
         ref_result = NumPyLSsolver(matrix, vector).run()
-        ref_solution = ref_result['solution']
+        ref_solution = ref_result.solution
         ref_normed = ref_solution / np.linalg.norm(ref_solution)
 
         # run hhl
@@ -290,7 +274,7 @@ class TestHHL(QiskitAquaTestCase):
                                               seed_simulator=aqua_globals.random_seed,
                                               seed_transpiler=aqua_globals.random_seed))
 
-        hhl_solution = hhl_result['solution']
+        hhl_solution = hhl_result.solution
         hhl_normed = hhl_solution / np.linalg.norm(hhl_solution)
 
         # compare result
@@ -300,10 +284,9 @@ class TestHHL(QiskitAquaTestCase):
         self.log.debug('HHL solution vector:       %s', hhl_solution)
         self.log.debug('algebraic solution vector: %s', ref_solution)
         self.log.debug('fidelity HHL to algebraic: %s', fidelity)
-        self.log.debug('probability of result:     %s', hhl_result["probability_result"])
+        self.log.debug('probability of result:     %s', hhl_result.probability_result)
 
-    @data(False, True)
-    def test_hhl_negative_eigs(self, deprecated_qft):
+    def test_hhl_negative_eigs(self):
         """ hhl negative eigs test """
         self.log.debug('Testing HHL with matrix with negative eigenvalues')
 
@@ -317,7 +300,7 @@ class TestHHL(QiskitAquaTestCase):
 
         # run NumPyLSsolver
         ref_result = NumPyLSsolver(matrix, vector).run()
-        ref_solution = ref_result['solution']
+        ref_solution = ref_result.solution
         ref_normed = ref_solution / np.linalg.norm(ref_solution)
 
         # run hhl
@@ -325,7 +308,7 @@ class TestHHL(QiskitAquaTestCase):
         matrix, vector, truncate_powerdim, truncate_hermitian = HHL.matrix_resize(matrix, vector)
 
         # Initialize eigenvalue finding module
-        eigs = TestHHL._create_eigs(matrix, 4, True, deprecated_qft)
+        eigs = TestHHL._create_eigs(matrix, 4, True)
         num_q, num_a = eigs.get_register_sizes()
 
         # Initialize initial state module
@@ -340,7 +323,7 @@ class TestHHL(QiskitAquaTestCase):
                                               seed_simulator=aqua_globals.random_seed,
                                               seed_transpiler=aqua_globals.random_seed))
 
-        hhl_solution = hhl_result["solution"]
+        hhl_solution = hhl_result.solution
         hhl_normed = hhl_solution / np.linalg.norm(hhl_solution)
 
         # compare results
@@ -350,7 +333,7 @@ class TestHHL(QiskitAquaTestCase):
         self.log.debug('HHL solution vector:       %s', hhl_solution)
         self.log.debug('algebraic solution vector: %s', ref_normed)
         self.log.debug('fidelity HHL to algebraic: %s', fidelity)
-        self.log.debug('probability of result:     %s', hhl_result["probability_result"])
+        self.log.debug('probability of result:     %s', hhl_result.probability_result)
 
     def test_hhl_random_hermitian(self):
         """ hhl random hermitian test """
@@ -362,7 +345,7 @@ class TestHHL(QiskitAquaTestCase):
 
         # run NumPyLSsolver
         ref_result = NumPyLSsolver(matrix, vector).run()
-        ref_solution = ref_result['solution']
+        ref_solution = ref_result.solution
         ref_normed = ref_solution / np.linalg.norm(ref_solution)
 
         # run hhl
@@ -387,7 +370,7 @@ class TestHHL(QiskitAquaTestCase):
                                               seed_transpiler=aqua_globals.random_seed))
         warnings.filterwarnings('always', category=DeprecationWarning)
 
-        hhl_solution = hhl_result['solution']
+        hhl_solution = hhl_result.solution
         hhl_normed = hhl_solution / np.linalg.norm(hhl_solution)
 
         # compare result
@@ -403,7 +386,7 @@ class TestHHL(QiskitAquaTestCase):
 
         # run NumPyLSsolver
         ref_result = NumPyLSsolver(matrix, vector).run()
-        ref_solution = ref_result['solution']
+        ref_solution = ref_result.solution
         ref_normed = ref_solution / np.linalg.norm(ref_solution)
 
         # run hhl
@@ -426,7 +409,7 @@ class TestHHL(QiskitAquaTestCase):
                                               seed_simulator=aqua_globals.random_seed,
                                               seed_transpiler=aqua_globals.random_seed))
 
-        hhl_solution = hhl_result['solution']
+        hhl_solution = hhl_result.solution
         hhl_normed = hhl_solution / np.linalg.norm(hhl_solution)
         # compare result
         fidelity = state_fidelity(ref_normed, hhl_normed)
@@ -435,7 +418,7 @@ class TestHHL(QiskitAquaTestCase):
         self.log.debug('HHL solution vector:       %s', hhl_solution)
         self.log.debug('algebraic solution vector: %s', ref_solution)
         self.log.debug('fidelity HHL to algebraic: %s', fidelity)
-        self.log.debug('probability of result:     %s', hhl_result["probability_result"])
+        self.log.debug('probability of result:     %s', hhl_result.probability_result)
 
 
 if __name__ == '__main__':

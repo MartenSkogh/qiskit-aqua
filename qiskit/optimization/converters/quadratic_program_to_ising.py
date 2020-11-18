@@ -1,5 +1,8 @@
+<<<<<<< HEAD
 # -*- coding: utf-8 -*-
 
+=======
+>>>>>>> 4a997e6328e06e250212ef82c9414ad16834b7c6
 # This code is part of Qiskit.
 #
 # (C) Copyright IBM 2020.
@@ -22,7 +25,11 @@ from ..problems.quadratic_program import QuadraticProgram
 
 
 class QuadraticProgramToIsing:
+<<<<<<< HEAD
     """Convert an optimization problem into a qubit operator."""
+=======
+    """DEPRECATED Convert an optimization problem into a qubit operator."""
+>>>>>>> 4a997e6328e06e250212ef82c9414ad16834b7c6
 
     def __init__(self) -> None:
         """Initialize the internal data structure."""

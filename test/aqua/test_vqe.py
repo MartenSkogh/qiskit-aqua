@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # This code is part of Qiskit.
 #
 # (C) Copyright IBM 2018, 2020.
@@ -15,7 +13,6 @@
 """ Test VQE """
 
 import unittest
-import warnings
 from test.aqua import QiskitAquaTestCase
 import numpy as np
 from ddt import ddt, unpack, data
@@ -26,7 +23,6 @@ from qiskit.aqua import QuantumInstance, aqua_globals, AquaError
 from qiskit.aqua.operators import (WeightedPauliOperator, PrimitiveOp, X, Z, I,
                                    AerPauliExpectation, PauliExpectation,
                                    MatrixExpectation, ExpectationBase)
-from qiskit.aqua.components.variational_forms import RYRZ
 from qiskit.aqua.components.optimizers import L_BFGS_B, COBYLA, SPSA, SLSQP
 from qiskit.aqua.algorithms import VQE
 
@@ -80,15 +76,6 @@ class TestVQE(QiskitAquaTestCase):
 
         with self.subTest(msg='assert optimizer_time is set'):
             self.assertIsNotNone(result.optimizer_time)
-
-    def test_deprecated_variational_forms(self):
-        """Test running the VQE on a deprecated VariationalForm object."""
-        warnings.filterwarnings('ignore', category=DeprecationWarning)
-        wavefunction = RYRZ(2)
-        vqe = VQE(self.h2_op, wavefunction, L_BFGS_B())
-        warnings.filterwarnings('always', category=DeprecationWarning)
-        result = vqe.run(self.statevector_simulator)
-        self.assertAlmostEqual(result.eigenvalue.real, self.h2_energy)
 
     def test_circuit_input(self):
         """Test running the VQE on a plain QuantumCircuit object."""
@@ -160,8 +147,8 @@ class TestVQE(QiskitAquaTestCase):
         result = vqe.run(self.qasm_simulator)
         self.assertAlmostEqual(result.eigenvalue.real, -1.86823, places=2)
 
-    def test_statevector_snapshot_mode(self):
-        """Test the VQE using Aer's statevector_simulator snapshot mode."""
+    def test_with_aer_statevector(self):
+        """Test VQE with Aer's statevector_simulator."""
         try:
             # pylint: disable=import-outside-toplevel
             from qiskit import Aer
@@ -180,7 +167,27 @@ class TestVQE(QiskitAquaTestCase):
         result = vqe.run(quantum_instance)
         self.assertAlmostEqual(result.eigenvalue.real, self.h2_energy, places=6)
 
-    def test_qasm_snapshot_mode(self):
+    def test_with_aer_qasm(self):
+        """Test VQE with Aer's qasm_simulator."""
+        try:
+            # pylint: disable=import-outside-toplevel
+            from qiskit import Aer
+        except Exception as ex:  # pylint: disable=broad-except
+            self.skipTest("Aer doesn't appear to be installed. Error: '{}'".format(str(ex)))
+            return
+        backend = Aer.get_backend('qasm_simulator')
+        optimizer = SPSA(maxiter=200, last_avg=5)
+        wavefunction = self.ry_wavefunction
+
+        vqe = VQE(self.h2_op, wavefunction, optimizer, expectation=PauliExpectation())
+
+        quantum_instance = QuantumInstance(backend,
+                                           seed_simulator=aqua_globals.random_seed,
+                                           seed_transpiler=aqua_globals.random_seed)
+        result = vqe.run(quantum_instance)
+        self.assertAlmostEqual(result.eigenvalue.real, -1.86305, places=2)
+
+    def test_with_aer_qasm_snapshot_mode(self):
         """Test the VQE using Aer's qasm_simulator snapshot mode."""
         try:
             # pylint: disable=import-outside-toplevel
@@ -192,8 +199,7 @@ class TestVQE(QiskitAquaTestCase):
         optimizer = L_BFGS_B()
         wavefunction = self.ry_wavefunction
 
-        vqe = VQE(self.h2_op, wavefunction, optimizer,
-                  expectation=AerPauliExpectation(), max_evals_grouped=1)
+        vqe = VQE(self.h2_op, wavefunction, optimizer, expectation=AerPauliExpectation())
 
         quantum_instance = QuantumInstance(backend, shots=1,
                                            seed_simulator=aqua_globals.random_seed,

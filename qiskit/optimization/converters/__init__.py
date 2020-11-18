@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # This code is part of Qiskit.
 #
 # (C) Copyright IBM 2019, 2020.
@@ -18,8 +16,19 @@ Optimization converters (:mod:`qiskit.optimization.converters`)
 
 .. currentmodule:: qiskit.optimization.converters
 
-This is selection of converters having encode, decode functionality to go between different
-forms.
+This is a set of converters having `convert` functionality to go between different representations
+of a given :class:`~qiskit.optimization.problems.QuadraticProgram` and to `interpret` a given
+result for the problem, based on the original problem before conversion, to return an appropriate
+:class:`~qiskit.optimization.algorithms.OptimizationResult`.
+
+Base class for converters
+=========================
+
+.. autosummary::
+   :toctree: ../stubs/
+   :nosignatures:
+
+   QuadraticProgramConverter
 
 Converters
 ==========
@@ -30,27 +39,40 @@ Converters
 
    InequalityToEquality
    IntegerToBinary
-   QuadraticProgramToQubo
    LinearEqualityToPenalty
+<<<<<<< HEAD
    QuadraticProgramToIsing
    IsingToQuadraticProgram
+=======
+   QuadraticProgramToQubo
+>>>>>>> 4a997e6328e06e250212ef82c9414ad16834b7c6
 
 """
 
-# opt problem dependency
 from .integer_to_binary import IntegerToBinary
 from .inequality_to_equality import InequalityToEquality
 from .linear_equality_to_penalty import LinearEqualityToPenalty
 from .quadratic_program_to_qubo import QuadraticProgramToQubo
 from .quadratic_program_to_ising import QuadraticProgramToIsing
 from .ising_to_quadratic_program import IsingToQuadraticProgram
+<<<<<<< HEAD
 
+=======
+from .quadratic_program_converter import QuadraticProgramConverter
+>>>>>>> 4a997e6328e06e250212ef82c9414ad16834b7c6
 
 __all__ = [
     "InequalityToEquality",
     "IntegerToBinary",
+    "IsingToQuadraticProgram",
+    "LinearEqualityToPenalty",
+    "QuadraticProgramConverter",
+    "QuadraticProgramToIsing",
     "QuadraticProgramToQubo",
+<<<<<<< HEAD
     "LinearEqualityToPenalty",
     "QuadraticProgramToIsing",
     "IsingToQuadraticProgram"
+=======
+>>>>>>> 4a997e6328e06e250212ef82c9414ad16834b7c6
 ]

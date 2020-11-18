@@ -1,5 +1,8 @@
+<<<<<<< HEAD
 # -*- coding: utf-8 -*-
 
+=======
+>>>>>>> 4a997e6328e06e250212ef82c9414ad16834b7c6
 # This code is part of Qiskit.
 #
 # (C) Copyright IBM 2020.
@@ -25,7 +28,11 @@ from ..problems.quadratic_program import QuadraticProgram
 
 
 class IsingToQuadraticProgram:
+<<<<<<< HEAD
     """Convert a qubit operator into a quadratic program"""
+=======
+    """DEPRECATED Convert a qubit operator into a quadratic program"""
+>>>>>>> 4a997e6328e06e250212ef82c9414ad16834b7c6
 
     def __init__(self, linear: bool = False) -> None:
         r"""
