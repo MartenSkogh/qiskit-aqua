@@ -48,7 +48,6 @@ def compute_integrals(atom,
     # molecule is in PySCF atom string format e.g. "H .0 .0 .0; H .0 .0 0.2"
     #          or in Z-Matrix format e.g. "H; O 1 1.08; H 2 1.08 1 107.5"
     # other parameters are as per PySCF got.Mole format
-
     atom = _check_molecule_format(atom)
     hf_method = hf_method.lower()
     if max_memory is None:
@@ -129,6 +128,9 @@ def _calculate_integrals(mol, hf_method='rhf', conv_tol=1e-9, max_cycle=50, init
     else:
         raise QiskitChemistryError('Invalid hf_method type: {}'.format(hf_method))
 
+    num_electrons = sum(m_f.nelec)
+    #print(f'Number electrons: {num_electrons}')
+        
     m_f.conv_tol = conv_tol
     m_f.max_cycle = max_cycle
     m_f.init_guess = init_guess
@@ -185,18 +187,24 @@ def _calculate_integrals(mol, hf_method='rhf', conv_tol=1e-9, max_cycle=50, init
     if mo_coeff_b is not None:
         mohij_b = np.dot(np.dot(mo_coeff_b.T, hij), mo_coeff_b)
 
+    # If we only have a single electron, then electron-electron interactions will be zero
     eri = mol.intor('int2e', aosym=1)
-    mo_eri = ao2mo.incore.full(m_f._eri, mo_coeff, compact=False)
-    mohijkl = mo_eri.reshape(norbs, norbs, norbs, norbs)
-    mohijkl_bb = None
-    mohijkl_ba = None
-    if mo_coeff_b is not None:
-        mo_eri_b = ao2mo.incore.full(m_f._eri, mo_coeff_b, compact=False)
-        mohijkl_bb = mo_eri_b.reshape(norbs, norbs, norbs, norbs)
-        mo_eri_ba = ao2mo.incore.general(m_f._eri,
-                                         (mo_coeff_b, mo_coeff_b, mo_coeff, mo_coeff),
-                                         compact=False)
-        mohijkl_ba = mo_eri_ba.reshape(norbs, norbs, norbs, norbs)
+    if num_electrons > 1:
+        mo_eri = ao2mo.incore.full(m_f._eri, mo_coeff, compact=False)
+        mohijkl = mo_eri.reshape(norbs, norbs, norbs, norbs)
+        mohijkl_bb = None
+        mohijkl_ba = None
+        if mo_coeff_b is not None:
+            mo_eri_b = ao2mo.incore.full(m_f._eri, mo_coeff_b, compact=False)
+            mohijkl_bb = mo_eri_b.reshape(norbs, norbs, norbs, norbs)
+            mo_eri_ba = ao2mo.incore.general(m_f._eri,
+                                             (mo_coeff_b, mo_coeff_b, mo_coeff, mo_coeff),
+                                             compact=False)
+            mohijkl_ba = mo_eri_ba.reshape(norbs, norbs, norbs, norbs)
+    elif num_electrons == 1:
+        mohijkl = np.zeros((norbs, norbs, norbs, norbs))
+        mohijkl_bb = mohijkl
+        mohijkl_ba = mohijkl
 
     # dipole integrals
     mol.set_common_orig((0, 0, 0))

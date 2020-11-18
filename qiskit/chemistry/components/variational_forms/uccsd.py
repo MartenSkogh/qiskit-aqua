@@ -496,7 +496,7 @@ class UCCSD(VariationalForm):
 
         num_particles = num_alpha + num_beta
 
-        if num_particles < 2:
+        if num_particles < 2 and 'd' in excitation_type:
             raise ValueError('Invalid number of particles {}'.format(num_particles))
         if num_orbitals < 4 or num_orbitals % 2 != 0:
             raise ValueError('Invalid number of orbitals {}'.format(num_orbitals))
